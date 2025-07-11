@@ -49,4 +49,10 @@ class EmployeeController(
         val employee = employeeServices.updateEmployee(updateEmployeeRequest)
         return ResponseEntity(employee, HttpStatus.OK)
     }
+
+    @DeleteMapping("/{id}")
+    fun deleteEmployee(@PathVariable id: UUID): ResponseEntity<Void> {
+        employeeServices.deleteEmployee(id)
+        return ResponseEntity(HttpStatus.NO_CONTENT)
+    }
 }
