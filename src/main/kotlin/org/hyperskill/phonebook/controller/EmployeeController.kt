@@ -1,6 +1,7 @@
 package org.hyperskill.phonebook.controller
 
 
+import jakarta.validation.Valid
 import org.hyperskill.phonebook.dtos.CreateEmployeeRequest
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.service.EmployeeServices
@@ -28,7 +29,7 @@ class EmployeeController(
     }
 
     @PostMapping
-    fun store(@RequestBody createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<Employee> {
+    fun store(@RequestBody @Valid createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<Employee> {
         val employee = employeeServices.store(createEmployeeRequest)
         return ResponseEntity(employee, HttpStatus.CREATED)
     }
