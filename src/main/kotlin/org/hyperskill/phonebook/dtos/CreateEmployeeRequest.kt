@@ -17,6 +17,5 @@ data class CreateEmployeeRequest(
     @field:Email
     val email: String?,
 
-    @field:org.hibernate.validator.constraints.UUID
     val departmentId: UUID?
 )
