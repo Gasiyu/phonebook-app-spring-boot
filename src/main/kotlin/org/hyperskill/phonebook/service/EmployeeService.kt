@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
 
 @Service
 class EmployeeServices(
@@ -32,4 +33,17 @@ class EmployeeServices(
 
         return employeeRepository.save(employee)
     }
+
+    fun updateEmployee(employee: UpdateEmployeeRequest): Employee {
+        val department = employee.departmentId?.let { departmentRepository.findById(it).orElse(null) }
+        return employeeRepository.save(Employee(
+            id = employee.id,
+            name = employee.name,
+            position = employee.position,
+            phone = employee.phone,
+            email = employee.email,
+            department = department
+        ))
+    }
+
 }
