@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.PutMapping
+import java.util.UUID
 
 
 @RestController
@@ -25,10 +26,17 @@ class EmployeeController(
     private val employeeServices: EmployeeServices
 ) {
 
-    @GetMapping
-    fun getAllEmployees(@RequestParam page: Int = 0): Page<Employee> {
-        return employeeServices.getAllEmployees(page)
+    fun getEmployees(
+        @RequestParam page: Int = 0,
+        @RequestParam(required = false) departmentId: UUID?,
+        @RequestParam(required = false) position: String?
+    ): ResponseEntity<Page<Employee>> {
+        if (page < 0) return ResponseEntity.badRequest().build()
+
+        val employees = employeeServices.getEmployeesFiltered(page, departmentId, position)
+        return ResponseEntity.ok(employees)
     }
+
 
     @PostMapping
     fun store(@RequestBody @Valid createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<Employee> {

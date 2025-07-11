@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
+import java.util.UUID
 
 @Service
 class EmployeeServices(
@@ -44,6 +45,25 @@ class EmployeeServices(
             email = employee.email,
             department = department
         ))
+    }
+
+    fun getEmployeesFiltered(
+        page: Int,
+        departmentId: UUID? = null,
+        position: String? = null
+    ): Page<Employee> {
+        val pageRequest = PageRequest.of(page, 10)
+
+        return when {
+            departmentId != null && !position.isNullOrBlank() ->
+                employeeRepository.findByDepartmentIdAndPositionContainingIgnoreCase(departmentId, position, pageRequest)
+            departmentId != null ->
+                employeeRepository.findByDepartmentId(departmentId, pageRequest)
+            !position.isNullOrBlank() ->
+                employeeRepository.findByPositionContainingIgnoreCase(position, pageRequest)
+            else ->
+                employeeRepository.findAll(pageRequest)
+        }
     }
 
 }
