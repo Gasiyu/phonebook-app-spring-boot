@@ -66,10 +66,10 @@ class EmployeeServices(
         }
     }
 
-    @DeleteMapping("/{id}")
-    fun deleteEmployee(@PathVariable id: UUID): ResponseEntity<Void> {
-        employeeServices.deleteEmployee(id)
-        return ResponseEntity(HttpStatus.NO_CONTENT)
+    fun deleteEmployee(id: UUID) {
+        val employee = employeeRepository.findByIdOrNull(id)
+            ?: throw EntityNotFoundException("Employee with id=$id not found")
+        employeeRepository.delete(employee)
     }
 
 }
