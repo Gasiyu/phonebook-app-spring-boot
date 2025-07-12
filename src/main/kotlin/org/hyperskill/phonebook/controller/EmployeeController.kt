@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.PutMapping
 import java.util.UUID
+import org.springframework.web.bind.annotation.PathVariable
 
 
 @RestController
@@ -26,6 +27,7 @@ class EmployeeController(
     private val employeeServices: EmployeeServices
 ) {
 
+    @GetMapping
     fun getEmployees(
         @RequestParam page: Int = 0,
         @RequestParam(required = false) departmentId: UUID?,
@@ -44,9 +46,12 @@ class EmployeeController(
         return ResponseEntity(employee, HttpStatus.CREATED)
     }
 
-    @PutMapping
-    fun updateEmployee(@RequestBody @Valid updateEmployeeRequest: UpdateEmployeeRequest):ResponseEntity<Employee> {
-        val employee = employeeServices.updateEmployee(updateEmployeeRequest)
+    @PutMapping("/{id}")
+    fun updateEmployee(
+        @PathVariable id: UUID,
+        @RequestBody @Valid updateEmployeeRequest: UpdateEmployeeRequest
+    ): ResponseEntity<Employee> {
+        val employee = employeeServices.updateEmployee(id, updateEmployeeRequest)
         return ResponseEntity(employee, HttpStatus.OK)
     }
 }

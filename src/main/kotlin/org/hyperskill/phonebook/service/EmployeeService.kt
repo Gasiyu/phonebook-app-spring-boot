@@ -35,7 +35,7 @@ class EmployeeServices(
         return employeeRepository.save(employee)
     }
 
-    fun updateEmployee(employee: UpdateEmployeeRequest): Employee {
+    fun updateEmployee(id: UUID, employee: UpdateEmployeeRequest): Employee {
         val department = employee.departmentId?.let { departmentRepository.findById(it).orElse(null) }
         return employeeRepository.save(Employee(
             id = employee.id,
