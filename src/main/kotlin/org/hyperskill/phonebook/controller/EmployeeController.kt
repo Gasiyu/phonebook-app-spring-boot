@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PathVariable
 import java.util.UUID
 import org.springframework.web.bind.annotation.PathVariable
 
@@ -53,5 +55,11 @@ class EmployeeController(
     ): ResponseEntity<Employee> {
         val employee = employeeServices.updateEmployee(id, updateEmployeeRequest)
         return ResponseEntity(employee, HttpStatus.OK)
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteEmployee(@PathVariable id: UUID): ResponseEntity<Void> {
+        employeeServices.deleteEmployee(id)
+        return ResponseEntity(HttpStatus.NO_CONTENT)
     }
 }

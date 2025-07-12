@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
+import jakarta.persistence.EntityNotFoundException
 import java.util.UUID
 
 @Service
@@ -64,6 +65,12 @@ class EmployeeServices(
             else ->
                 employeeRepository.findAll(pageRequest)
         }
+    }
+
+    fun deleteEmployee(id: UUID) {
+        val employee = employeeRepository.findByIdOrNull(id)
+            ?: throw EntityNotFoundException("Employee with id=$id not found")
+        employeeRepository.delete(employee)
     }
 
 }
