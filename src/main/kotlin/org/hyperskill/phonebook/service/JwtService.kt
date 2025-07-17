@@ -11,28 +11,28 @@ import java.util.*
 @Service
 class JwtService {
     @Value("\${security.jwt.secret-key}")
-    private val secretKey: String = "defaultSecretKey"
+    private val secretKey: String = Jwts.SIG.HS512.key().build().encoded.toString()
 
     @Value("\${security.jwt.expiration-time}")
-    private val expiresIn: Long = 0
+    private val expiresIn: Long = 3600
 
     fun getExpiresIn(): Long {
         return expiresIn
     }
 
     fun generateToken(user: UserDetails): String {
-        val secret = Keys.hmacShaKeyFor(secretKey.toByteArray());
+        val secret = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
         return Jwts.builder()
             .subject(user.username)
             .issuedAt(Date())
-            .expiration(Date(System.currentTimeMillis() + expiresIn)) // 10 hours
-            .signWith(secret)
+            .expiration(Date(System.currentTimeMillis() + expiresIn.times(1000)))
+            .signWith(secret, Jwts.SIG.HS512)
             .compact()
     }
 
     private fun extractAllClaims(token: String): Claims {
-        val secret = Keys.hmacShaKeyFor(secretKey.toByteArray());
+        val secret = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
         return Jwts.parser()
             .verifyWith(secret)
