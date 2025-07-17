@@ -1,0 +1,10 @@
+<cache alias="cachePhoneBook">
+    <key-type>java.lang.Long</key-type>
+    <value-type>com.example.dto.UserDTO</value-type>
+    <expiry>
+        <ttl unit="minutes">30</ttl>
+    </expiry>
+    <resources>
+        <heap unit="entries">1000</heap>
+    </resources>
+</cache>
