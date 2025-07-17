@@ -5,9 +5,9 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 @Service
-class UserphonebookService {
+class UserPhonebookService {
 
-    @Cacheable("cachePhoneBook") // ⬅️ Match alias in ehcache.xml
+    @Cacheable("cachePhoneBook")
     fun getUser(userId: Long): String {
         println("Fetching from DB...")
         return "User data for $userId"
