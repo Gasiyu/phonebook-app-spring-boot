@@ -1,8 +1,8 @@
 package org.hyperskill.phonebook
 
+import jakarta.servlet.DispatcherType
 import org.hyperskill.phonebook.filter.FilterChainExceptionHandler
 import org.hyperskill.phonebook.filter.JwtAuthFilter
-import jakarta.servlet.DispatcherType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -17,7 +17,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.session.DisableEncodeUrlFilter
 
 
-
 @Configuration
 class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter,
@@ -29,10 +28,12 @@ class SecurityConfig(
             .httpBasic(Customizer.withDefaults())
             .csrf { it.disable() }
             .cors { it.disable() }
+            .headers { headers -> headers.frameOptions { it.disable() } }
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.OPTIONS).permitAll()
                     .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                    .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                     .requestMatchers("/api/roles/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
