@@ -37,9 +37,9 @@ VALUES ('65c48484-5093-4537-ae23-e1f8ac41d823', 'admin', '$2a$10$Uu42IGt5cKkwnf.
         true);
 INSERT INTO USERS(id, username, password, is_active)
 VALUES ('6dbe15cf-37f4-4636-ad21-b3905e85e488', 'manager',
-        '$2a$10$9m1bqVsDYyx2DocBA/Y2DOu818pUjbUTTW2mumbEuzNG.7Uq9KDqa', true);
+        '$2a$10$mzf7MjbeRTyo5I3lqFEucOYPSCgmqQMjWxPDT/LKnsfnOB5OEGxoi', true);
 INSERT INTO USERS(id, username, password, is_active)
-VALUES ('256570f3-81f1-4e6c-b354-5c7f49462128', 'user', '$2a$10$mzf7MjbeRTyo5I3lqFEucOYPSCgmqQMjWxPDT/LKnsfnOB5OEGxoi',
+VALUES ('256570f3-81f1-4e6c-b354-5c7f49462128', 'user', '$2a$10$9m1bqVsDYyx2DocBA/Y2DOu818pUjbUTTW2mumbEuzNG.7Uq9KDqa',
         true);
 
 -- Insert sample user_roles
