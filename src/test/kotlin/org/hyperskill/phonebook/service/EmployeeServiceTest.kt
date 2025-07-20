@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import org.hyperskill.phonebook.dtos.CreateEmployeeRequest
+import org.hyperskill.phonebook.dtos.request.employee.CreateEmployeeRequest
 import org.hyperskill.phonebook.model.Department
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.repository.DepartmentRepository
@@ -18,7 +18,7 @@ class EmployeeServiceTest : WordSpec({
 
     val employeeRepository = mockk<EmployeeRepository>()
     val departmentRepository = mockk<DepartmentRepository>()
-    val employeeService = EmployeeServices(employeeRepository, departmentRepository)
+    val employeeService = EmployeeService(employeeRepository, departmentRepository)
 
     "employee service" should {
         
@@ -60,7 +60,7 @@ class EmployeeServiceTest : WordSpec({
                 departmentId = departmentId
             )
 
-            every { departmentRepository.findById(departmentId) } returns java.util.Optional.of(department)
+            every { departmentRepository.findById(departmentId) } returns Optional.of(department)
             every { employeeRepository.save(any()) } answers { firstArg() }
 
             val result = employeeService.store(request)
@@ -82,7 +82,7 @@ class EmployeeServiceTest : WordSpec({
                 phone = "0123456789",
                 email = "max@firma.de"
             )
-            every { employeeRepository.findById(employeeId) } returns java.util.Optional.of(employee)
+            every { employeeRepository.findById(employeeId) } returns Optional.of(employee)
             every { employeeRepository.delete(employee) } returns Unit
 
             employeeService.deleteEmployee(employeeId)

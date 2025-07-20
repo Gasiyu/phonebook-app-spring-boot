@@ -3,6 +3,7 @@ package org.hyperskill.phonebook.service
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import org.hyperskill.phonebook.dtos.JwtTokenResult
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
@@ -20,15 +21,21 @@ class JwtService {
         return expiresIn
     }
 
-    fun generateToken(user: UserDetails): String {
+    fun generateToken(user: UserDetails): JwtTokenResult {
         val secret = Keys.hmacShaKeyFor(secretKey.toByteArray())
+        val expirationTime = System.currentTimeMillis() + expiresIn.times(1000)
 
-        return Jwts.builder()
+        val token = Jwts.builder()
             .subject(user.username)
             .issuedAt(Date())
-            .expiration(Date(System.currentTimeMillis() + expiresIn.times(1000)))
+            .expiration(Date(expirationTime))
             .signWith(secret, Jwts.SIG.HS512)
             .compact()
+
+        return JwtTokenResult(
+            token = token,
+            expiresAt = expirationTime
+        )
     }
 
     private fun extractAllClaims(token: String): Claims {
