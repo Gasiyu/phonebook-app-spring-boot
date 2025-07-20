@@ -1,6 +1,8 @@
 package org.hyperskill.phonebook.controller
 
 import org.hyperskill.phonebook.SecurityConfig
+import org.hyperskill.phonebook.security.CustomAccessDeniedHandler
+import org.hyperskill.phonebook.security.CustomAuthenticationEntryPoint
 import org.hyperskill.phonebook.service.EmployeeServices
 import org.hyperskill.phonebook.service.JwtService
 import org.hyperskill.phonebook.service.UserAuthService
@@ -30,6 +32,12 @@ class EmployeeControllerTest(
 
     @field:MockitoBean
     private lateinit var userAuthService: UserAuthService
+
+    @field:MockitoBean
+    private lateinit var customAccessDeniedHandler: CustomAccessDeniedHandler
+
+    @field:MockitoBean
+    private lateinit var customAuthenticationEntryPoint: CustomAuthenticationEntryPoint
 
     @Test
     @Throws(Exception::class)

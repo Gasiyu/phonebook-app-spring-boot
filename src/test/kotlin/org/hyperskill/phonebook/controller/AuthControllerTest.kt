@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.hyperskill.phonebook.SecurityConfig
 import org.hyperskill.phonebook.dtos.JwtTokenResult
 import org.hyperskill.phonebook.dtos.request.auth.LoginRequest
+import org.hyperskill.phonebook.security.CustomAccessDeniedHandler
+import org.hyperskill.phonebook.security.CustomAuthenticationEntryPoint
 import org.hyperskill.phonebook.service.AuthService
 import org.hyperskill.phonebook.service.JwtService
 import org.hyperskill.phonebook.service.UserAuthService
@@ -32,6 +34,12 @@ internal class AuthControllerTest(
 
     @field:MockitoBean
     private lateinit var jwtService: JwtService
+
+    @field:MockitoBean
+    private lateinit var customAccessDeniedHandler: CustomAccessDeniedHandler
+
+    @field:MockitoBean
+    private lateinit var customAuthenticationEntryPoint: CustomAuthenticationEntryPoint
 
     @Suppress("unused")
     @field:MockitoBean
