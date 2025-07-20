@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class EmployeeServices(
+class EmployeeService(
     private val employeeRepository: EmployeeRepository,
     private val departmentRepository: DepartmentRepository
 ) {

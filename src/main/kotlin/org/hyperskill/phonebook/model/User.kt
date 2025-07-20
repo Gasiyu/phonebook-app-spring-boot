@@ -30,12 +30,3 @@ data class User(
     @Column(name = "is_active", nullable = false, insertable = false, updatable = false)
     var isActive: Boolean = true
 )
-
-@Entity
-@Table(name = "roles")
-data class Role(
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    var id: UUID? = null,
-    var name: String,
-)

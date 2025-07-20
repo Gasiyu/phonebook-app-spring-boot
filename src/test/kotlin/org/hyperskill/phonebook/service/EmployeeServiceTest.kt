@@ -18,7 +18,7 @@ class EmployeeServiceTest : WordSpec({
 
     val employeeRepository = mockk<EmployeeRepository>()
     val departmentRepository = mockk<DepartmentRepository>()
-    val employeeService = EmployeeServices(employeeRepository, departmentRepository)
+    val employeeService = EmployeeService(employeeRepository, departmentRepository)
 
     "employee service" should {
         

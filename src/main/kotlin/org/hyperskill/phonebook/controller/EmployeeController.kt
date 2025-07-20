@@ -8,7 +8,7 @@ import org.hyperskill.phonebook.dtos.response.PageDto
 import org.hyperskill.phonebook.dtos.response.SuccessResponse
 import org.hyperskill.phonebook.dtos.response.employee.EmployeeAdminDto
 import org.hyperskill.phonebook.dtos.response.employee.EmployeeUserDto
-import org.hyperskill.phonebook.service.EmployeeServices
+import org.hyperskill.phonebook.service.EmployeeService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.context.SecurityContextHolder
@@ -20,7 +20,7 @@ import java.util.*
 @RequestMapping("/api/employees")
 
 class EmployeeController(
-    private val employeeServices: EmployeeServices
+    private val employeeService: EmployeeService
 ) {
 
     @GetMapping
@@ -31,7 +31,7 @@ class EmployeeController(
     ): ResponseEntity<SuccessResponse<PageDto<*>>> {
         if (page < 0) return ResponseEntity.badRequest().build()
 
-        val employees = employeeServices.getEmployeesFiltered(page, departmentId, position)
+        val employees = employeeService.getEmployeesFiltered(page, departmentId, position)
 
         val authentication = SecurityContextHolder.getContext().authentication
         val isAdmin = authentication.authorities.any { it.authority == "ROLE_ADMIN" }
@@ -54,7 +54,7 @@ class EmployeeController(
 
     @PostMapping
     fun store(@RequestBody @Valid createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<SuccessResponse<EmployeeAdminDto>> {
-        val employee = employeeServices.store(createEmployeeRequest)
+        val employee = employeeService.store(createEmployeeRequest)
         val employeeDto = EmployeeAdminDto.fromEmployee(employee)
         return ResponseEntity(
             SuccessResponse(
@@ -71,7 +71,7 @@ class EmployeeController(
         @PathVariable id: UUID,
         @RequestBody @Valid updateEmployeeRequest: UpdateEmployeeRequest
     ): ResponseEntity<SuccessResponse<EmployeeAdminDto>> {
-        val employee = employeeServices.updateEmployee(id, updateEmployeeRequest)
+        val employee = employeeService.updateEmployee(id, updateEmployeeRequest)
         val employeeDto = EmployeeAdminDto.fromEmployee(employee)
         return ResponseEntity(
             SuccessResponse(
@@ -85,7 +85,7 @@ class EmployeeController(
 
     @DeleteMapping("/{id}")
     fun deleteEmployee(@PathVariable id: UUID): ResponseEntity<SuccessResponse<Nothing?>> {
-        employeeServices.deleteEmployee(id)
+        employeeService.deleteEmployee(id)
         return ResponseEntity(
             SuccessResponse(
                 statusCode = 204,

@@ -3,7 +3,7 @@ package org.hyperskill.phonebook.controller
 import org.hyperskill.phonebook.SecurityConfig
 import org.hyperskill.phonebook.security.CustomAccessDeniedHandler
 import org.hyperskill.phonebook.security.CustomAuthenticationEntryPoint
-import org.hyperskill.phonebook.service.EmployeeServices
+import org.hyperskill.phonebook.service.EmployeeService
 import org.hyperskill.phonebook.service.JwtService
 import org.hyperskill.phonebook.service.UserAuthService
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ class EmployeeControllerTest(
 ) {
 
     @field:MockitoBean
-    private lateinit var employeeServices: EmployeeServices
+    private lateinit var employeeService: EmployeeService
 
     @field:MockitoBean
     private lateinit var jwtService: JwtService
