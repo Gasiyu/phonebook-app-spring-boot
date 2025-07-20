@@ -15,6 +15,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @ControllerAdvice
 class ControllerExceptionHandler {
@@ -129,6 +130,20 @@ class ControllerExceptionHandler {
     @ExceptionHandler(EntityNotFoundException::class)
     fun handleException(
         ex: EntityNotFoundException
+    ): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse(
+                statusCode = 404,
+                errorMessage = HttpStatus.NOT_FOUND.reasonPhrase,
+                description = ex.message
+            ),
+            HttpStatus.NOT_FOUND
+        )
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleException(
+        ex: NoResourceFoundException
     ): ResponseEntity<ErrorResponse> {
         return ResponseEntity(
             ErrorResponse(

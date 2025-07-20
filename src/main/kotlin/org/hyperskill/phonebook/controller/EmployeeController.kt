@@ -2,8 +2,8 @@ package org.hyperskill.phonebook.controller
 
 
 import jakarta.validation.Valid
-import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
 import org.hyperskill.phonebook.dtos.request.employee.CreateEmployeeRequest
+import org.hyperskill.phonebook.dtos.request.employee.UpdateEmployeeRequest
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.service.EmployeeServices
 import org.springframework.data.domain.Page

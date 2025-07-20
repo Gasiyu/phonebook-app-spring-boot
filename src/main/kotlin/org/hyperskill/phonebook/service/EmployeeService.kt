@@ -1,8 +1,8 @@
 package org.hyperskill.phonebook.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
 import org.hyperskill.phonebook.dtos.request.employee.CreateEmployeeRequest
+import org.hyperskill.phonebook.dtos.request.employee.UpdateEmployeeRequest
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.repository.DepartmentRepository
 import org.hyperskill.phonebook.repository.EmployeeRepository
@@ -37,9 +37,11 @@ class EmployeeServices(
     }
 
     fun updateEmployee(id: UUID, employee: UpdateEmployeeRequest): Employee {
+        employeeRepository.findByIdOrNull(id)
+            ?: throw EntityNotFoundException("Employee with id=$id not found")
         val department = employee.departmentId?.let { departmentRepository.findById(it).orElse(null) }
         return employeeRepository.save(Employee(
-            id = employee.id,
+            id = id,
             name = employee.name,
             position = employee.position,
             phone = employee.phone,
