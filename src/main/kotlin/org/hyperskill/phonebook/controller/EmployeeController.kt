@@ -4,11 +4,14 @@ package org.hyperskill.phonebook.controller
 import jakarta.validation.Valid
 import org.hyperskill.phonebook.dtos.request.employee.CreateEmployeeRequest
 import org.hyperskill.phonebook.dtos.request.employee.UpdateEmployeeRequest
-import org.hyperskill.phonebook.model.Employee
+import org.hyperskill.phonebook.dtos.response.PageDto
+import org.hyperskill.phonebook.dtos.response.SuccessResponse
+import org.hyperskill.phonebook.dtos.response.employee.EmployeeAdminDto
+import org.hyperskill.phonebook.dtos.response.employee.EmployeeUserDto
 import org.hyperskill.phonebook.service.EmployeeServices
-import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -25,32 +28,71 @@ class EmployeeController(
         @RequestParam page: Int = 0,
         @RequestParam(required = false) departmentId: UUID?,
         @RequestParam(required = false) position: String?
-    ): ResponseEntity<Page<Employee>> {
+    ): ResponseEntity<SuccessResponse<PageDto<*>>> {
         if (page < 0) return ResponseEntity.badRequest().build()
 
         val employees = employeeServices.getEmployeesFiltered(page, departmentId, position)
-        return ResponseEntity.ok(employees)
+
+        val authentication = SecurityContextHolder.getContext().authentication
+        val isAdmin = authentication.authorities.any { it.authority == "ROLE_ADMIN" }
+
+        val pageDto = if (isAdmin) {
+            PageDto.fromPage(employees) { EmployeeAdminDto.fromEmployee(it) }
+        } else {
+            PageDto.fromPage(employees) { EmployeeUserDto.fromEmployee(it) }
+        }
+
+        return ResponseEntity.ok(
+            SuccessResponse(
+                statusCode = 200,
+                successMessage = "Employees retrieved successfully",
+                data = pageDto
+            )
+        )
     }
 
 
     @PostMapping
-    fun store(@RequestBody @Valid createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<Employee> {
+    fun store(@RequestBody @Valid createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<SuccessResponse<EmployeeAdminDto>> {
         val employee = employeeServices.store(createEmployeeRequest)
-        return ResponseEntity(employee, HttpStatus.CREATED)
+        val employeeDto = EmployeeAdminDto.fromEmployee(employee)
+        return ResponseEntity(
+            SuccessResponse(
+                statusCode = 201,
+                successMessage = "Employee created successfully",
+                data = employeeDto
+            ),
+            HttpStatus.CREATED
+        )
     }
 
     @PutMapping("/{id}")
     fun updateEmployee(
         @PathVariable id: UUID,
         @RequestBody @Valid updateEmployeeRequest: UpdateEmployeeRequest
-    ): ResponseEntity<Employee> {
+    ): ResponseEntity<SuccessResponse<EmployeeAdminDto>> {
         val employee = employeeServices.updateEmployee(id, updateEmployeeRequest)
-        return ResponseEntity(employee, HttpStatus.OK)
+        val employeeDto = EmployeeAdminDto.fromEmployee(employee)
+        return ResponseEntity(
+            SuccessResponse(
+                statusCode = 200,
+                successMessage = "Employee updated successfully",
+                data = employeeDto
+            ),
+            HttpStatus.OK
+        )
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(@PathVariable id: UUID): ResponseEntity<Void> {
+    fun deleteEmployee(@PathVariable id: UUID): ResponseEntity<SuccessResponse<Nothing?>> {
         employeeServices.deleteEmployee(id)
-        return ResponseEntity(HttpStatus.NO_CONTENT)
+        return ResponseEntity(
+            SuccessResponse(
+                statusCode = 204,
+                successMessage = "Employee deleted successfully",
+                data = null
+            ),
+            HttpStatus.NO_CONTENT
+        )
     }
 }
