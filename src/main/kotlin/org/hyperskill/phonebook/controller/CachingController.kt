@@ -12,7 +12,7 @@ import org.hyperskill.phonebook.dtos.Response
 import org.hyperskill.phonebook.dtos.Request
 
 @RestController
-@RequestMapping("caching")
+@RequestMapping("api/caching")
 class CachingController(
     private val userPhonebookService: UserPhonebookService
 ) {
