@@ -12,19 +12,21 @@ import org.hyperskill.phonebook.dtos.Response
 import org.hyperskill.phonebook.dtos.Request
 
 @RestController
-@RequestMapping("api")
-class AuthController(
-    private val authService: AuthService,
-    private val jwtService: JwtService,
+@RequestMapping("caching")
+class CachingController(
     private val userPhonebookService: UserPhonebookService
 ) {
-    @PostMapping("login")
-    fun login(@RequestBody body: Request): Response {
-        val user = authService.authenticate(body.username, body.password)
-        return Response(
-            jwtService.generateToken(user),
-            jwtService.getExpiresIn(),
-        )
-    }
-}
 
+    @GetMapping("/{userId}")
+    fun getUser(@PathVariable userId: String): String {
+        return userPhonebookService.getUser(userId)
+    }
+
+    @DeleteMapping("/{userId}")
+    fun deleteUser(@PathVariable userId: String): String {
+        return  userPhonebookService.deleteUser(userId)
+    }
+
+    // look update controller and use the same method
+    //@PathVariable id: UUID
+}
