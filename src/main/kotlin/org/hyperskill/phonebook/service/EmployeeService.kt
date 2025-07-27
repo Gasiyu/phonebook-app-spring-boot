@@ -91,7 +91,7 @@ class EmployeeServices(
     }
 
     @CachePut("cachePhoneBook", key = "#userId")
-    fun putUser(@PathVariable userId: String): String {
+    fun putUser(@PathVariable userId: String, @RequestBody employee: Employee): String {
         println("Putting user data for $userId")
         return "User data for $userId"
     }
