@@ -6,8 +6,12 @@ import org.hyperskill.phonebook.model.User
 import org.hyperskill.phonebook.model.Role
 import org.hyperskill.phonebook.repository.RoleRepository
 import org.hyperskill.phonebook.repository.UserRepository
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
+import org.springframework.web.bind.annotation.PathVariable
 import java.util.UUID
+
 
 @Service
 class UserService(
@@ -50,5 +54,17 @@ class UserService(
         userRepository.save(user)
 
         return user.run(::toUserDto)
+    }
+
+    @Cacheable("cachePhoneBook")
+    fun getUser(@PathVariable userId: String): String {
+        println("Fetching from DB...")
+        return "User data for $userId"
+    }
+
+    @CacheEvict("cachePhoneBook", key = "#userId")
+    fun deleteUser(@PathVariable userId: String): String {
+        println("Evicting cache...")
+        return  "User data for $userId"
     }
 }

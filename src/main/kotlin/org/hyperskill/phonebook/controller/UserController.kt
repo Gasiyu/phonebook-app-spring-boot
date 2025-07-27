@@ -14,8 +14,6 @@ import java.util.UUID
 @RestController()
 @RequestMapping("api")
 @Validated
-@Cacheable(cacheNames = ["employees"])
-@CacheEvict(cacheNames = ["employees"])
 
 class UserController(
     private val userService: UserService,

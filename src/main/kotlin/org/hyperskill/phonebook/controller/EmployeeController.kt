@@ -24,8 +24,6 @@ import java.util.UUID
 
 
 @RestController
-@Cacheable(cacheNames = ["employees"])
-@CacheEvict(cacheNames = ["employees"])
 @RequestMapping("/api/employees")
 
 class EmployeeController(
