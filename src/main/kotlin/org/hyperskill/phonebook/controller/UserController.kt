@@ -5,6 +5,8 @@ import org.hyperskill.phonebook.dtos.UserDto
 import org.hyperskill.phonebook.model.Role
 import org.hyperskill.phonebook.service.UserService
 import jakarta.validation.Valid
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
@@ -12,6 +14,9 @@ import java.util.UUID
 @RestController()
 @RequestMapping("api")
 @Validated
+@Cacheable(cacheNames = ["employees"])
+@CacheEvict(cacheNames = ["employees"])
+
 class UserController(
     private val userService: UserService,
 ) {

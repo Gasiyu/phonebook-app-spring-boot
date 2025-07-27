@@ -1,42 +1,14 @@
 package org.hyperskill.phonebook.controller
 
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import io.mockk.MockKAnnotations
 import org.hyperskill.phonebook.service.UserPhonebookService
-import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import kotlin.test.Test
-import io.mockk.every
-import io.mockk.verify
-import io.mockk.impl.annotations.MockK
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.cache.CacheManager
 
 
-@WebMvcTest
-class MyServiceUnitTest {
 
-    @MockK
-    lateinit var myService: UserPhonebookService
-
-    @BeforeEach
-    fun setUp() {
-        MockKAnnotations.init(this)
-    }
-
-    @Test
-    fun mockReturn() {
-        every { myService.getUser(userId = "#userId") } returns "Cached Data"
-
-        val result1 = myService.getUser(userId = "#userId")
-        val result2 = myService.getUser(userId = "#userId")
-
-        verify(exactly = 2) { myService.getUser(userId = "#userId") }
-        assertEquals("Cached Data", result1)
-        assertEquals("Cached Data", result2)
-    }
-}
 @SpringBootTest
 class CacheIntegrationTest {
 
@@ -44,13 +16,18 @@ class CacheIntegrationTest {
     lateinit var myService: UserPhonebookService
 
     @Autowired
-    lateinit var cacheManager: UserPhonebookService
+    lateinit var cacheManager: CacheManager
 
     @Test
-    fun `should populate cache after method call`() {
-        val result = myService.getUser(userId = "cachePhoneBook")
+    fun mockReturn() {
+        val userId = "cachePhoneBook"
+        val result = myService.getUser(userId)
 
-        val cached = cacheManager.getUser("cachePhoneBook")[1]
+        val cachedValue = cacheManager
+            .getCache("cachePhoneBook")
+            ?.get(userId, String::class.java)
+
+        assertEquals(result, cachedValue)
     }
 }
 

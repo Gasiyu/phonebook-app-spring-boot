@@ -6,6 +6,8 @@ import org.hyperskill.phonebook.dtos.CreateEmployeeRequest
 import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.service.EmployeeServices
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -22,6 +24,8 @@ import java.util.UUID
 
 
 @RestController
+@Cacheable(cacheNames = ["employees"])
+@CacheEvict(cacheNames = ["employees"])
 @RequestMapping("/api/employees")
 
 class EmployeeController(
