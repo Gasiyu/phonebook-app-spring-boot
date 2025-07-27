@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service
 import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
 import java.util.UUID
 
 @Service
@@ -86,5 +88,11 @@ class EmployeeServices(
     fun deleteUser(@PathVariable userId: String): String {
         println("Evicting cache...")
         return  "User data for $userId"
+    }
+
+    @CachePut("cachePhoneBook", key = "#userId")
+    fun putUser(@PathVariable userId: String): String {
+        println("Putting user data for $userId")
+        return "User data for $userId"
     }
 }
