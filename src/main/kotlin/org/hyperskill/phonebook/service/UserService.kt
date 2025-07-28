@@ -2,16 +2,16 @@ package org.hyperskill.phonebook.service
 
 import org.hyperskill.phonebook.dtos.UserDto
 import org.hyperskill.phonebook.exception.NotFoundException
-import org.hyperskill.phonebook.model.User
 import org.hyperskill.phonebook.model.Role
+import org.hyperskill.phonebook.model.User
 import org.hyperskill.phonebook.repository.RoleRepository
 import org.hyperskill.phonebook.repository.UserRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.PathVariable
-import java.util.UUID
+import java.util.*
 
 
 @Service
@@ -28,18 +28,25 @@ class UserService(
         )
     }
 
+    @Cacheable(value = ["users"], key = "'all-roles'")
     fun getRoles(): List<Role> {
         return roleRepository.findAll().toList()
     }
 
+    @Cacheable(value = ["users"], key = "'role-' + #id")
     fun getRole(id: UUID): Role {
         return roleRepository.findById(id).orElseThrow { NotFoundException("Role with $id not found") }
     }
 
+    @Cacheable(value = ["users"], key = "#id")
     fun getUser(id: UUID): User {
         return userRepository.findById(id).orElseThrow { NotFoundException("User with $id not found") }
     }
 
+    @Caching(
+        put = [CachePut(value = ["users"], key = "#userId")],
+        evict = [CacheEvict(value = ["users"], key = "'user-dto-' + #userId")]
+    )
     fun addRole(userId: UUID, roleId: UUID): UserDto {
         val user = getUser(userId)
         val role = getRole(roleId)
@@ -49,29 +56,15 @@ class UserService(
         return user.run(::toUserDto)
     }
 
+    @Caching(
+        put = [CachePut(value = ["users"], key = "#userId")],
+        evict = [CacheEvict(value = ["users"], key = "'user-dto-' + #userId")]
+    )
     fun removeRole(userId: UUID, roleId: UUID): UserDto {
         val user = getUser(userId)
         user.roles.removeIf { it.id == roleId }
         userRepository.save(user)
 
         return user.run(::toUserDto)
-    }
-
-    @Cacheable("cachePhoneBook")
-    fun getUser(@PathVariable userId: String): String {
-        println("Fetching from DB...")
-        return "User data for $userId"
-    }
-
-    @CacheEvict("cachePhoneBook", key = "#userId")
-    fun deleteUser(@PathVariable userId: String): String {
-        println("Evicting cache...")
-        return  "User data for $userId"
-    }
-
-    @CachePut("cachePhoneBook", key = "#userId")
-    fun putUser(@PathVariable userId: String): String {
-        println("Putting user data for $userId")
-        return "User data for $userId"
     }
 }

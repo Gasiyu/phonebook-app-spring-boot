@@ -1,7 +1,7 @@
 package org.hyperskill.phonebook.service
 
-import org.hyperskill.phonebook.model.User
 import org.hyperskill.phonebook.adapter.AppUserAdapter
+import org.hyperskill.phonebook.model.User
 import org.hyperskill.phonebook.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService

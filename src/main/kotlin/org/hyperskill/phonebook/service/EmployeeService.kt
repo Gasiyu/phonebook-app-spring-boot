@@ -6,16 +6,15 @@ import org.hyperskill.phonebook.dtos.request.employee.UpdateEmployeeRequest
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.repository.DepartmentRepository
 import org.hyperskill.phonebook.repository.EmployeeRepository
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.cache.annotation.CacheEvict
-import org.springframework.cache.annotation.CachePut
-import org.springframework.cache.annotation.Cacheable
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestBody
-import java.util.UUID
+import java.util.*
 
 @Service
 class EmployeeService(
@@ -23,11 +22,13 @@ class EmployeeService(
     private val departmentRepository: DepartmentRepository
 ) {
 
+    @Cacheable(value = ["employees"], key = "'all-page-' + #page", condition = "#page >= 0")
     fun getAllEmployees(page: Int): Page<Employee> {
         val pageRequest = PageRequest.of(page, 10)
         return employeeRepository.findAll(pageRequest)
     }
 
+    @CachePut(value = ["employees"], key = "#result.id")
     fun store(createEmployeeRequest: CreateEmployeeRequest): Employee {
         val department = createEmployeeRequest.departmentId?.let { departmentRepository.findByIdOrNull(it) }
         val employee = Employee(
@@ -41,6 +42,13 @@ class EmployeeService(
         return employeeRepository.save(employee)
     }
 
+    @Cacheable(value = ["employees"], key = "#id")
+    fun getEmployee(id: UUID): Employee {
+        return employeeRepository.findByIdOrNull(id)
+            ?: throw EntityNotFoundException("Employee with id=$id not found")
+    }
+
+    @CachePut(value = ["employees"], key = "#id")
     fun updateEmployee(id: UUID, employee: UpdateEmployeeRequest): Employee {
         employeeRepository.findByIdOrNull(id)
             ?: throw EntityNotFoundException("Employee with id=$id not found")
@@ -55,6 +63,11 @@ class EmployeeService(
         ))
     }
 
+    @Cacheable(
+        value = ["employees"],
+        key = "'filtered-page-' + #page + '-dept-' + #departmentId + '-pos-' + #position",
+        condition = "#page >= 0"
+    )
     fun getEmployeesFiltered(
         page: Int,
         departmentId: UUID? = null,
@@ -74,27 +87,16 @@ class EmployeeService(
         }
     }
 
+    @Caching(
+        evict = [
+            CacheEvict(value = ["employees"], key = "#id"),
+            CacheEvict(value = ["employees"], key = "'all-page-*'", allEntries = true),
+            CacheEvict(value = ["employees"], key = "'filtered-page-*'", allEntries = true)
+        ]
+    )
     fun deleteEmployee(id: UUID) {
         val employee = employeeRepository.findByIdOrNull(id)
             ?: throw EntityNotFoundException("Employee with id=$id not found")
         employeeRepository.delete(employee)
-    }
-
-    @Cacheable("cachePhoneBook")
-    fun getUser(@PathVariable userId: String): String {
-        println("Fetching from DB...")
-        return "User data for $userId"
-    }
-
-    @CacheEvict("cachePhoneBook", key = "#userId")
-    fun deleteUser(@PathVariable userId: String): String {
-        println("Evicting cache...")
-        return  "User data for $userId"
-    }
-
-    @CachePut("cachePhoneBook", key = "#userId")
-    fun putUser(@PathVariable userId: String, @RequestBody employee: Employee): String {
-        println("Putting user data for $userId")
-        return "User data for $userId"
     }
 }
