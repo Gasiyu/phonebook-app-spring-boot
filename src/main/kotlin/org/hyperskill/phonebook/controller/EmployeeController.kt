@@ -51,6 +51,29 @@ class EmployeeController(
         )
     }
 
+    @GetMapping("/{id}")
+    fun getEmployee(
+        @PathVariable id: UUID
+    ): ResponseEntity<SuccessResponse<*>> {
+        val employee = employeeService.getEmployee(id)
+
+        val authentication = SecurityContextHolder.getContext().authentication
+        val isAdmin = authentication.authorities.any { it.authority == "ROLE_ADMIN" }
+
+        val employeeDto = if (isAdmin) {
+            EmployeeAdminDto.fromEmployee(employee)
+        } else {
+            EmployeeUserDto.fromEmployee(employee)
+        }
+
+        return ResponseEntity.ok(
+            SuccessResponse(
+                statusCode = 200,
+                successMessage = "Employees retrieved successfully",
+                data = employeeDto
+            )
+        )
+    }
 
     @PostMapping
     fun store(@RequestBody @Valid createEmployeeRequest: CreateEmployeeRequest): ResponseEntity<SuccessResponse<EmployeeAdminDto>> {

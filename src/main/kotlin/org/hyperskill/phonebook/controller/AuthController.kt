@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("api")
 class AuthController(
     private val authService: AuthService,
-    private val jwtService: JwtService,
+    private val jwtService: JwtService
 ) {
     @PostMapping("login")
     fun login(@RequestBody @Valid body: LoginRequest): ResponseEntity<SuccessResponse<LoginResponse>> {

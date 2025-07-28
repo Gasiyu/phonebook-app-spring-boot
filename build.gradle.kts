@@ -31,6 +31,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 	implementation("org.springframework.batch:spring-batch-core")
+	implementation("javax.cache:cache-api:1.1.1")
+	implementation("org.springframework.boot:spring-boot-starter-cache")
+	implementation("io.mockk:mockk:1.14.5")
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
@@ -41,7 +44,9 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("io.mockk:mockk:1.14.5")
 	testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 }
 
 kotlin {
