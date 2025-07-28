@@ -15,6 +15,7 @@ import org.mockito.kotlin.anyOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cache.CacheManager
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -122,8 +123,10 @@ class EmployeeServiceCachingTest {
         assertEquals(mockEmployee, result)
 
         // Verify the value is not in the cache
-        val evictedEmployee = cacheManager.getCache("employees")?.get(mockEmployeeId, Employee::class.java)
-        assertNull(evictedEmployee)
+        val evictedAllPage = cacheManager.getCache("employees")?.get("'all-page-*'", Page::class.java)
+        val evictedFiltered = cacheManager.getCache("employees")?.get("'filtered-page-*'", Page::class.java)
+        assertNull(evictedAllPage)
+        assertNull(evictedFiltered)
 
         // Verify the value is in the cache
         employeeService.getEmployee(result.id!!)
