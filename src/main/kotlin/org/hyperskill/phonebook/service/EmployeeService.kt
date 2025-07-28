@@ -29,6 +29,13 @@ class EmployeeService(
     }
 
     @CachePut(value = ["employees"], key = "#result.id")
+    @Caching(
+        evict = [
+            CacheEvict(value = ["employees"], key = "'all-page-*'", allEntries = true),
+            CacheEvict(value = ["employees"], key = "'filtered-page-*'", allEntries = true)
+        ],
+        put = [CachePut(value = ["employees"], key = "#result.id")]
+    )
     fun store(createEmployeeRequest: CreateEmployeeRequest): Employee {
         val department = createEmployeeRequest.departmentId?.let { departmentRepository.findByIdOrNull(it) }
         val employee = Employee(
@@ -48,7 +55,13 @@ class EmployeeService(
             ?: throw EntityNotFoundException("Employee with id=$id not found")
     }
 
-    @CachePut(value = ["employees"], key = "#id")
+    @Caching(
+        evict = [
+            CacheEvict(value = ["employees"], key = "'all-page-*'", allEntries = true),
+            CacheEvict(value = ["employees"], key = "'filtered-page-*'", allEntries = true)
+        ],
+        put = [CachePut(value = ["employees"], key = "#id")]
+    )
     fun updateEmployee(id: UUID, employee: UpdateEmployeeRequest): Employee {
         employeeRepository.findByIdOrNull(id)
             ?: throw EntityNotFoundException("Employee with id=$id not found")
