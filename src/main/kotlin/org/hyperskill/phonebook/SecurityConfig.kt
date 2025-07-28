@@ -1,8 +1,8 @@
 package org.hyperskill.phonebook
 
-import jakarta.servlet.DispatcherType
-import org.hyperskill.phonebook.filter.FilterChainExceptionHandler
 import org.hyperskill.phonebook.filter.JwtAuthFilter
+import org.hyperskill.phonebook.security.CustomAccessDeniedHandler
+import org.hyperskill.phonebook.security.CustomAuthenticationEntryPoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -14,13 +14,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.security.web.session.DisableEncodeUrlFilter
 
 
 @Configuration
 class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter,
-    private val filterChainExceptionHandler: FilterChainExceptionHandler,
+    private val customAccessDeniedHandler: CustomAccessDeniedHandler,
+    private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint
 ) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
@@ -31,16 +31,25 @@ class SecurityConfig(
             .headers { headers -> headers.frameOptions { it.disable() } }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                    .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                     .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+
                     .requestMatchers("/api/roles/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER")
                     .requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN")
+
+                    .requestMatchers(HttpMethod.GET, "/api/employees")
+                    .hasAnyAuthority("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_USER")
+                    .requestMatchers(HttpMethod.POST, "/api/employees").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasAuthority("ROLE_ADMIN")
+
                     .requestMatchers("/api/**").authenticated()
                     .anyRequest().denyAll()
             }
-            .addFilterBefore(filterChainExceptionHandler, DisableEncodeUrlFilter::class.java)
+            .exceptionHandling { exceptionHandling ->
+                exceptionHandling.accessDeniedHandler(customAccessDeniedHandler)
+                exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint)
+            }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
 

@@ -1,14 +1,10 @@
-package org.hyperskill.phonebook.dtos
+package org.hyperskill.phonebook.dtos.request.employee
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
-import java.util.UUID
+import java.util.*
 
-class UpdateEmployeeRequest (
-
-    @field:NotNull(message = "ID must not be null")
-    val id: UUID,
+class UpdateEmployeeRequest(
 
     @field:NotBlank(message = "Name must not be blank")
     val name: String,

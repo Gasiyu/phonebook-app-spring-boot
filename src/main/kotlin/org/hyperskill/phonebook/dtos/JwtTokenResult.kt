@@ -1,7 +1,6 @@
 package org.hyperskill.phonebook.dtos
 
-
-class Response(
+data class JwtTokenResult(
     val token: String,
-    val expiresIn: Long,
+    val expiresAt: Long
 )

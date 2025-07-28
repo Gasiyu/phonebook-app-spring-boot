@@ -3,7 +3,7 @@ package org.hyperskill.phonebook.controller
 import org.hyperskill.phonebook.model.Department
 import org.hyperskill.phonebook.model.Division
 import org.hyperskill.phonebook.model.Employee
-import org.hyperskill.phonebook.service.EmployeeServices
+import org.hyperskill.phonebook.service.EmployeeService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import kotlin.test.Test
@@ -17,7 +17,7 @@ import java.util.*
 class CacheIntegrationTest {
 
     @Autowired
-    lateinit var myService: EmployeeServices
+    lateinit var myService: EmployeeService
 
     @Autowired
     lateinit var cacheManager: CacheManager
@@ -63,4 +63,3 @@ class CacheIntegrationTest {
         assertEquals("User data for $userId", cachePut)
     }
 }
-

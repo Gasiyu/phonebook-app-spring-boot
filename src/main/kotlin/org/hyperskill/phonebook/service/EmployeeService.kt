@@ -1,6 +1,8 @@
 package org.hyperskill.phonebook.service
 
-import org.hyperskill.phonebook.dtos.CreateEmployeeRequest
+import jakarta.persistence.EntityNotFoundException
+import org.hyperskill.phonebook.dtos.request.employee.CreateEmployeeRequest
+import org.hyperskill.phonebook.dtos.request.employee.UpdateEmployeeRequest
 import org.hyperskill.phonebook.model.Employee
 import org.hyperskill.phonebook.repository.DepartmentRepository
 import org.hyperskill.phonebook.repository.EmployeeRepository
@@ -8,8 +10,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.hyperskill.phonebook.dtos.UpdateEmployeeRequest
-import jakarta.persistence.EntityNotFoundException
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import java.util.UUID
 
 @Service
-class EmployeeServices(
+class EmployeeService(
     private val employeeRepository: EmployeeRepository,
     private val departmentRepository: DepartmentRepository
 ) {
@@ -31,9 +31,9 @@ class EmployeeServices(
     fun store(createEmployeeRequest: CreateEmployeeRequest): Employee {
         val department = createEmployeeRequest.departmentId?.let { departmentRepository.findByIdOrNull(it) }
         val employee = Employee(
-            name = createEmployeeRequest.name,
-            position = createEmployeeRequest.position,
-            phone = createEmployeeRequest.phone,
+            name = createEmployeeRequest.name.orEmpty(),
+            position = createEmployeeRequest.position.orEmpty(),
+            phone = createEmployeeRequest.phone.orEmpty(),
             email = createEmployeeRequest.email,
             department = department
         )
@@ -42,9 +42,11 @@ class EmployeeServices(
     }
 
     fun updateEmployee(id: UUID, employee: UpdateEmployeeRequest): Employee {
+        employeeRepository.findByIdOrNull(id)
+            ?: throw EntityNotFoundException("Employee with id=$id not found")
         val department = employee.departmentId?.let { departmentRepository.findById(it).orElse(null) }
         return employeeRepository.save(Employee(
-            id = employee.id,
+            id = id,
             name = employee.name,
             position = employee.position,
             phone = employee.phone,

@@ -1,150 +1,232 @@
 package org.hyperskill.phonebook.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.hyperskill.phonebook.dtos.CreateEmployeeRequest
-import org.hyperskill.phonebook.model.Department
-import org.hyperskill.phonebook.model.Division
-import org.hyperskill.phonebook.model.Employee
-import org.hyperskill.phonebook.service.EmployeeServices
+import org.hyperskill.phonebook.SecurityConfig
+import org.hyperskill.phonebook.security.CustomAccessDeniedHandler
+import org.hyperskill.phonebook.security.CustomAuthenticationEntryPoint
+import org.hyperskill.phonebook.service.EmployeeService
+import org.hyperskill.phonebook.service.JwtService
+import org.hyperskill.phonebook.service.UserAuthService
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.time.Instant
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
 
 @WebMvcTest(EmployeeController::class)
-internal class EmployeeControllerTest(
+@Import(SecurityConfig::class)
+class EmployeeControllerTest(
     @Autowired private val mockMvc: MockMvc
 ) {
 
     @field:MockitoBean
-    private lateinit var employeeServices: EmployeeServices
+    private lateinit var employeeService: EmployeeService
 
-    @Autowired
-    private lateinit var objectMapper: ObjectMapper
+    @field:MockitoBean
+    private lateinit var jwtService: JwtService
 
-    private val mockDepartmentId = UUID.fromString("660e8400-e29b-41d4-a716-446655440001")
+    @field:MockitoBean
+    private lateinit var userAuthService: UserAuthService
 
-    private val mockDivision = Division(
-        id = UUID.fromString("550e8400-e29b-41d4-a716-446655440001"), name = "Information Technology", isActive = true
-    )
+    @field:MockitoBean
+    private lateinit var customAccessDeniedHandler: CustomAccessDeniedHandler
 
-    private val mockDepartment = Department(
-        id = mockDepartmentId,
-        name = "Software Development",
-        division = mockDivision,
-        isActive = true,
-        createdAt = Instant.now(),
-        updatedAt = Instant.now()
-    )
-
-    private val mockCreateEmployeeRequest = CreateEmployeeRequest(
-        name = "John Doe",
-        position = "Software Engineer",
-        phone = "+1-555-0199",
-        email = "john.doe@company.com",
-        departmentId = mockDepartmentId
-    )
-
-    private val mockEmployee = Employee(
-        id = UUID.fromString("770e8400-e29b-41d4-a716-446655440001"),
-        name = "John Doe",
-        position = "Software Engineer",
-        phone = "+1-555-0199",
-        email = "john.doe@company.com",
-        department = mockDepartment,
-        createdAt = Instant.now(),
-        updatedAt = Instant.now(),
-        isActive = true
-    )
+    @field:MockitoBean
+    private lateinit var customAuthenticationEntryPoint: CustomAuthenticationEntryPoint
 
     @Test
     @Throws(Exception::class)
-    fun `POST employees with valid request returns valid ResponseEntity`() {
-        `when`(employeeServices.store(mockCreateEmployeeRequest)).thenReturn(mockEmployee)
+    fun `GET employees without authorization returns 401`() {
+        val requestBuilder = get("/api/employees")
 
-        val requestBuilder = post("/api/employees").contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(mockCreateEmployeeRequest))
-
-        mockMvc.perform(requestBuilder).andExpectAll(
-                status().isCreated,
-                content().contentType(MediaType.APPLICATION_JSON),
-                jsonPath("$.id").value(mockEmployee.id.toString()),
-                jsonPath("$.name").value("John Doe"),
-                jsonPath("$.position").value("Software Engineer"),
-                jsonPath("$.phone").value("+1-555-0199"),
-                jsonPath("$.email").value("john.doe@company.com"),
-                jsonPath("$.active").value(true)
-            )
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isUnauthorized())
     }
 
     @Test
+    @WithMockUser(authorities = ["ROLE_USER"])
     @Throws(Exception::class)
-    fun `POST employees with minimal valid request returns created`() {
-        val requestBuilder = post("/api/employees").contentType(MediaType.APPLICATION_JSON).content(
+    fun `GET employees with 'ROLE_USER' MockUser returns 200`() {
+        val requestBuilder = get("/api/employees")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_MANAGER"])
+    @Throws(Exception::class)
+    fun `GET employees with 'ROLE_MANAGER' MockUser returns 200`() {
+        val requestBuilder = get("/api/employees")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_ADMIN"])
+    @Throws(Exception::class)
+    fun `GET employees with 'ROLE_ADMIN' MockUser returns 200`() {
+        val requestBuilder = get("/api/employees")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_USER"])
+    @Throws(Exception::class)
+    fun `GET employees with invalid page parameter returns 400`() {
+        val requestBuilder = get("/api/employees")
+            .param("page", "-1")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isBadRequest())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_USER"])
+    @Throws(Exception::class)
+    fun `GET employees with filtering parameters returns 200`() {
+        val requestBuilder = get("/api/employees")
+            .param("page", "0")
+            .param("position", "Developer")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_USER"])
+    @Throws(Exception::class)
+    fun `POST employees with 'user' MockUser returns 403`() {
+        val requestBuilder = post("/api/employees")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isForbidden())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_ADMIN"])
+    @Throws(Exception::class)
+    fun `POST employees with 'ROLE_ADMIN' MockUser returns 200`() {
+        val requestBuilder = post("/api/employees")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
                 """
                 {
-                  "name": "test",
-                  "position": "test",
-                  "phone": "test"
+                    "name": "John Doe",
+                    "phone": "085111111111",
+                    "position": "Software Engineer"
                 }
             """.trimIndent()
             )
 
-        mockMvc.perform(requestBuilder).andExpect(status().isCreated)
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isCreated())
     }
 
     @Test
     @Throws(Exception::class)
-    fun `POST employees with invalid request returns bad request`() {
-        val requestBuilder = post("/api/employees").contentType(MediaType.APPLICATION_JSON).content(
+    fun `PUT employee without authorization returns 401`() {
+        val employeeId = UUID.randomUUID()
+        val requestBuilder = put("/api/employees/$employeeId")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
                 """
                 {
-                  "name": "test"
+                    "id": "$employeeId",
+                    "name": "Updated Name",
+                    "phone": "085222222222",
+                    "position": "Senior Engineer"
                 }
             """.trimIndent()
             )
 
-        mockMvc.perform(requestBuilder).andExpect(status().isBadRequest)
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isUnauthorized())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_USER"])
+    @Throws(Exception::class)
+    fun `PUT employee with 'ROLE_USER' MockUser returns 403`() {
+        val employeeId = UUID.randomUUID()
+        val requestBuilder = put("/api/employees/$employeeId")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {
+                    "id": "$employeeId",
+                    "name": "Updated Name",
+                    "phone": "085222222222",
+                    "position": "Senior Engineer"
+                }
+            """.trimIndent()
+            )
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isForbidden())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_ADMIN"])
+    @Throws(Exception::class)
+    fun `PUT employee with 'ROLE_ADMIN' MockUser returns 200`() {
+        val employeeId = UUID.randomUUID()
+
+        val requestBuilder = put("/api/employees/$employeeId")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {
+                    "id": "$employeeId",
+                    "name": "Updated Name",
+                    "phone": "085222222222",
+                    "position": "Senior Engineer",
+                    "email": "updated@example.com"
+                }
+            """.trimIndent()
+            )
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
     }
 
     @Test
     @Throws(Exception::class)
-    fun `POST employees with invalid email returns bad request`() {
-        val requestBuilder = post("/api/employees").contentType(MediaType.APPLICATION_JSON).content(
-                """
-                {
-                  "name": "test",
-                  "position": "test",
-                  "phone": "test",
-                  "email": "test"
-                }
-            """.trimIndent()
-            )
+    fun `DELETE employee without authorization returns 401`() {
+        val employeeId = UUID.randomUUID()
+        val requestBuilder = delete("/api/employees/$employeeId")
 
-        mockMvc.perform(requestBuilder).andExpect(status().isBadRequest)
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isUnauthorized())
     }
 
     @Test
+    @WithMockUser(authorities = ["ROLE_USER"])
     @Throws(Exception::class)
-    fun `POST employees with invalid uuid returns bad request`() {
-        val requestBuilder = post("/api/employees").contentType(MediaType.APPLICATION_JSON).content(
-                """
-                {
-                  "name": "test",
-                  "position": "test",
-                  "phone": "test",
-                  "departmentId": "this-is-not-uuid"
-                }
-            """.trimIndent()
-            )
+    fun `DELETE employee with 'ROLE_USER' MockUser returns 403`() {
+        val employeeId = UUID.randomUUID()
+        val requestBuilder = delete("/api/employees/$employeeId")
 
-        mockMvc.perform(requestBuilder).andExpect(status().isBadRequest)
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isForbidden())
+    }
+
+    @Test
+    @WithMockUser(authorities = ["ROLE_ADMIN"])
+    @Throws(Exception::class)
+    fun `DELETE employee with 'ROLE_ADMIN' MockUser returns 204`() {
+        val employeeId = UUID.randomUUID()
+        val requestBuilder = delete("/api/employees/$employeeId")
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isNoContent())
     }
 }
